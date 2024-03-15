@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "sdg4idrr"
+version = "0.1.0"
+description = "Python Virtual Environment of Synthetic Data Generation for Implicit Discourse Relation Recognition"
+authors = ["Kazumasa Omura <omura@nlp.ist.i.kyoto-u.ac.jp>"]
+
+packages = [
+    { include = "first_party_modules", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.10"
+python-dotenv = ">=1.0,<2.0"
+scikit-learn = ">=1.2.0,<1.3.0"
+# for synthetic data generation
+faiss-gpu = ">=1.0,<2.0"
+openai = ">=0.27.0,<0.28.0"
+simcse = ">=0.4,<1.0"
+tenacity = ">=8.0,<9.0"
+tiktoken = ">=0.4.0,<0.5.0"
+# for first_party_modules.ml
+hydra-core = {"path" = "./src/hydra"}
+torch = ">=1.10.0,<1.11.0"
+transformers = ">=4.20.0,<4.21.0"
+wandb = ">=0.12.0,<0.13.0"
+# cf. https://github.com/pytorch/pytorch/issues/69894
+setuptools = "59.5.0"
+
+[tool.poetry.dev-dependencies]
+jupyterlab = ">=4.0,<5.0"
+matplotlib = ">=3.6.0,<3.7.0"
+seaborn = ">=0.12,<1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ["py39"]
+
+[tool.isort]
+py_version = 39
+line_length = 120
+multi_line_output = 3  # cf. https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
+profile = "black"  # for compatibility with black
+src_paths = ["src/first_party_modules"]
+
+[tool.flake8]
+# E203: whitespace before ":"
+# W503: line break occurred before a binary operator
+ignore = ["E203", "W503"]
+max-line-length = 120
