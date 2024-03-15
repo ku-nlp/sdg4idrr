@@ -2,18 +2,24 @@
 
 This repository contains scripts of synthetic data generation for Implicit Discourse Relation Recognition.
 
+### Requirements
+
+- Python 3.9
+- poetry
+  ```shell
+  pip install poetry
+  ```
+- java (required to install hydra)
+  ```shell
+  wget https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz
+  tar -xf openjdk-17.0.2_linux-x64_bin.tar.gz
+  mv jdk-17.0.2 $HOME/.local
+  export PATH="$HOME/.local/jdk-17.0.2/bin:$PATH"
+  ```
+
 ### Set up Python Virtual Environment
 
 ```shell
-# (optional) install poetry
-# pip install poetry
-
-# (optional) install java (required to install hydra)
-# wget https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz
-# tar -xf openjdk-17.0.2_linux-x64_bin.tar.gz
-# mv jdk-17.0.2 $HOME/.local
-# export PATH="$HOME/.local/jdk-17.0.2/bin:$PATH"
-
 git clone git@github.com:facebookresearch/hydra.git -b v1.3.2 src/hydra
 poetry install [--no-dev]
 
