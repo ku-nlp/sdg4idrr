@@ -43,14 +43,20 @@ pre-commit install
 # obtain Penn Discourse Treebank Version 3.0 (cf. https://catalog.ldc.upenn.edu/LDC2019T05)
 
 # build PDTB3 dataset
-poetry run python scripts/build_pdtb3_dataset.py IN_ROOT/ OUT_ROOT/  # cf. help message of IN_ROOT argument
+poetry run python scripts/build_pdtb3_dataset.py \
+  IN_ROOT/ \
+  OUT_ROOT/  # cf. help message of IN_ROOT argument
 ```
 
-##### Investigate Few-Shot Performance of ChatGPT on PDTB3 Dataset
+##### Investigate Few-Shot Performance of ChatGPT
 
 ```shell
 # investigate few-shot performance of ChatGPT on PDTB3 dataset
-poetry run python scripts/preliminary/investigate_few-shot_performance_of_chatgpt.py path/to/train.jsonl path/to/test.jsonl gpt4_few-shot.jsonl [--dry-run]
+poetry run python scripts/preliminary/investigate_few-shot_performance_of_chatgpt.py \
+  path/to/train.jsonl \
+  path/to/test.jsonl \
+  gpt4_few-shot.jsonl \
+  [--dry-run]
 ```
 
 ### Reference/Citation

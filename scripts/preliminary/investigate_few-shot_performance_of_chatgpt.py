@@ -36,7 +36,11 @@ class OpenAIUtils(BaseOpenAIUtils):
         )
 
         if self.monitor["num_examples"] == 0:
-            print(user_prompt)
+            print(
+                "---------- confirm user prompt ----------\n"
+                f"{user_prompt}\n"
+                "--------------------"
+            )
         self.monitor["num_examples"] += 1
 
         return [
