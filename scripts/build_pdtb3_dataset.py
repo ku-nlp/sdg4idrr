@@ -188,7 +188,7 @@ def ji_split(out_root: Path, section2examples: dict[str, list[dict[str, str]]]) 
         "dev": gather_examples(section_indices[0:2], section2examples),
         "test": gather_examples(section_indices[21:23], section2examples),
     }
-    out_dir = out_root / "Ji"
+    out_dir = out_root / "ji"
     out_dir.mkdir(parents=True, exist_ok=True)
     for split, examples in dataset.items():
         save_examples(out_dir / f"{split}.jsonl", examples)

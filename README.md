@@ -1,6 +1,6 @@
 # Synthetic Data Generation for Implicit Discourse Relation Recognition
 
-This repository contains scripts of synthetic data generation for Implicit Discourse Relation Recognition.
+This repository contains scripts of synthetic data generation for Implicit Discourse Relation Recognition. [WIP]
 
 ### Requirements
 
@@ -9,11 +9,11 @@ This repository contains scripts of synthetic data generation for Implicit Disco
   ```shell
   pip install poetry
   ```
-- java (required to install hydra)
+- Java (required to install hydra)
   ```shell
   wget https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz
   tar -xf openjdk-17.0.2_linux-x64_bin.tar.gz
-  mv jdk-17.0.2 $HOME/.local
+  mv jdk-17.0.2/ $HOME/.local/
   export PATH="$HOME/.local/jdk-17.0.2/bin:$PATH"
   ```
 
@@ -23,8 +23,9 @@ This repository contains scripts of synthetic data generation for Implicit Disco
 git clone git@github.com:facebookresearch/hydra.git -b v1.3.2 src/hydra
 poetry install [--no-dev]
 
-# make a .env file and set OPENAI_API-KEY
-echo "OPENAI_API-KEY=<OPENAI_API-KEY>" > .env
+# make a .env file
+echo "OPENAI_API-KEY=<OPENAI_API-KEY>" >> .env
+echo "OPENAI-ORGANIZATION=<OPENAI-ORGANIZATION>" >> .env
 ```
 
 ### (optional) Set up pre-commit

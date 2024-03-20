@@ -1,15 +1,3 @@
-PDTB3_L1_SENSES = [
-    "Temporal",
-    "Contingency",
-    "Comparison",
-    "Expansion",
-]
-PDTB3_L1_SENSE2DEFINITION = {
-    "Temporal": "the situations described in the arguments are intended to be related temporally",
-    "Contingency": "the situation described by one argument provides the reason, explanation or justification for the situation described by the other",
-    "Comparison": "the discourse relation between two arguments highlights their differences or similarities, including differences between expected consequences and actual ones",
-    "Expansion": "relations that expand the discourse and move its narrative or exposition forward",
-}
 SELECTED_PDTB3_L2_SENSES = [
     "Temporal.Synchronous",
     "Temporal.Asynchronous",
@@ -41,4 +29,17 @@ SELECTED_PDTB3_L2_SENSE2DEFINITION = {
     "Expansion.Level-of-detail": "both arguments describe the same situation, but in less or more detail",
     "Expansion.Manner": "the situation described by one argument presents the manner in which the situation described by other argument has happened or been done",
     "Expansion.Substitution": "arguments are presented as exclusive alternatives, with one being ruled out",
+}
+
+PDTB3_L1_SENSES = [
+    "Temporal",
+    "Contingency",
+    "Comparison",
+    "Expansion",
+]
+PDTB3_L1_SENSE2DEFINITION = {
+    "Temporal": "the situations described in the arguments are intended to be related temporally",
+    "Contingency": "the situation described by one argument provides the reason, explanation or justification for the situation described by the other",
+    "Comparison": "the discourse relation between two arguments highlights their differences or similarities, including differences between expected consequences and actual ones",
+    "Expansion": "relations that expand the discourse and move its narrative or exposition forward",
 }
