@@ -35,7 +35,7 @@ class OpenAIUtils(BaseOpenAIUtils):
             instruction, n_way_k_shot_examples, test_input
         )
 
-        if self.monitor["num_examples"] == 0:
+        if self.monitor["num_examples"] < 1:
             print(
                 "---------- confirm user prompt ----------\n"
                 f"{user_prompt}\n"
@@ -63,9 +63,11 @@ class OpenAIUtils(BaseOpenAIUtils):
             )
             user_prompt = f"{instruction}\n" f"{demonstrations}\n" f"{test_input}"
             num_prompt_tokens = len(self.encoding.encode(user_prompt))
+
             self.monitor["max_prompt_tokens"] = max(
                 num_prompt_tokens, self.monitor["max_prompt_tokens"]
             )
+
             if num_prompt_tokens <= self.max_prompt_tokens:
                 return user_prompt
         else:
@@ -132,12 +134,14 @@ def save_results(results: list[tuple[ObjectHook, str]], output_file: Path) -> No
 
 
 def main():
-    parser = ArgumentParser()
+    parser = ArgumentParser(
+        description="script to investigate the few-shot performance of ChatGPT on PDTB3 dataset"
+    )
     parser.add_argument("TRAIN", type=Path, help="path to train.jsonl")
     parser.add_argument("TEST", type=Path, help="path to test.jsonl")
     parser.add_argument("OUT_FILE", type=Path, help="path to output file")
     parser.add_argument(
-        "--dry-run", action="store_true", type=bool, help="whether to perform a dry run"
+        "--dry-run", action="store_true", help="whether to perform a dry run"
     )
     args = parser.parse_args()
 
@@ -170,7 +174,8 @@ def main():
         response = openai_utils.get_response(messages)
         if response is None:
             continue
-        results.append((test_example, response["choices"][0]["message"]["content"]))
+        completion = response["choices"][0]["message"]["content"]
+        results.append((test_example, completion))
         bar.set_postfix({"cost": f"${openai_utils.compute_cost()}"})
         sleep(3)
     print(
