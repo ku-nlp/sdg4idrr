@@ -5,6 +5,7 @@ This repository contains scripts of Synthetic Data Generation for Implicit Disco
 ### Requirements
 
 - Python 3.9
+  - see pyproject.toml
 - poetry
   ```shell
   pip install poetry
@@ -42,10 +43,12 @@ pre-commit install
 ```shell
 # obtain Penn Discourse Treebank Version 3.0 (cf. https://catalog.ldc.upenn.edu/LDC2019T05)
 
+# confirm help message of IN_ROOT argument
+poetry run python scripts/build_pdtb3_dataset.py -h
 # build PDTB3 dataset
 poetry run python scripts/build_pdtb3_dataset.py \
   IN_ROOT/ \
-  OUT_ROOT/  # cf. help message of IN_ROOT argument
+  OUT_ROOT/
 ```
 
 ##### Investigate Few-Shot Performance of ChatGPT
@@ -56,6 +59,31 @@ poetry run python scripts/preliminary/investigate_few-shot_performance_of_chatgp
   path/to/train.jsonl \
   path/to/test.jsonl \
   gpt4_few-shot.jsonl \
+  [--dry-run]
+```
+
+##### Generate Candidates of Arg2
+
+```shell
+# generate candidates of Arg2 based on a confusion matrix
+poetry run python scripts/generate_candidates_of_arg2.py \
+  path/to/train.jsonl \
+  path/to/dev_pred.jsonl \
+  OUT_DIR/ \
+  [--top-k int] \
+  [--dry-run]
+```
+
+##### Filter Synthetic Argument Pairs
+
+```shell
+# filter synthetic argument pairs using GPT-4
+poetry run python scripts/filter_synthetic_argument_pairs.py \
+  path/to/train.jsonl \
+  path/to/dev_pred.jsonl \
+  SYNTH_DATA_DIR/ \
+  OUT_DIR/ \
+  [--top-k int] \
   [--dry-run]
 ```
 

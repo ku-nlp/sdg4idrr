@@ -89,15 +89,12 @@ class BaseOpenAIUtils:
         return senses
 
     def get_sense2examples(
-        self, examples: list[ObjectHook], synthetic: bool = False
+        self, examples: list[ObjectHook]
     ) -> dict[str, list[ObjectHook]]:
         sense2examples = defaultdict(list)
         for example in examples:
-            if synthetic is True:
-                sense2examples[example.true].append(example)
-            else:
-                for sense in self.get_senses(example):
-                    sense2examples[sense].append(example)
+            for sense in self.get_senses(example):
+                sense2examples[sense].append(example)
         return sense2examples
 
     def get_sense2conns(self, example: ObjectHook) -> dict[str, list[str]]:
@@ -166,11 +163,10 @@ class BaseOpenAIUtils:
     def get_messages(self, *args) -> list[dict[str, str]]:
         raise NotImplementedError
 
-    # return None if no response
     @retry(
         stop=stop_after_attempt(4),
         wait=wait_fixed(15),
-        retry_error_callback=lambda x: None,
+        retry_error_callback=lambda x: None,  # return None if no response
     )
     def get_response(self, messages: list[dict[str, str]]) -> Optional[dict[str, ...]]:
         # attempt_number = get_response.retry.statistics["attempt_number"]
@@ -183,12 +179,17 @@ class BaseOpenAIUtils:
             top_p=1,
             presence_penalty=0,
             frequency_penalty=0,
-            # number of answers
-            n=1,
+            n=1,  # number of responses
             request_timeout=15,
         )
         self.monitor["sum_prompt_tokens"] += response["usage"]["prompt_tokens"]
         self.monitor["sum_completion_tokens"] += response["usage"]["completion_tokens"]
+        if self.monitor["num_examples"] < 3:
+            print(
+                "---------- confirm completion ----------\n"
+                f'{response["choices"][0]["message"]["content"].rstrip()}\n'
+                "--------------------"
+            )
         return response
 
     def compute_cost(self) -> float:
