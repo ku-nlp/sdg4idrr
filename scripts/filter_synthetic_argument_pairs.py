@@ -81,12 +81,13 @@ def main():
 
     set_seed(seed=0)
 
+    num_few_shot_examples = 8
     openai_utils = OpenAIUtils(
         model_name="gpt-4-0613",
         max_tokens=4096,
         max_completion_tokens=128,
         level="l2",
-        num_few_shot_examples=8,
+        num_few_shot_examples=num_few_shot_examples,
     )
 
     sense2train_examples = openai_utils.get_sense2examples(
@@ -130,7 +131,7 @@ def main():
             for j, (arg_pair, nearest_neighbors) in enumerate(
                 zip(arg_pairs[span], nearest_neighbors_list[span])
             ):
-                # random_samples = sample(sense2train_examples[pred], 8)
+                # random_samples = sample(sense2train_examples[pred], num_few_shot_examples)
                 messages = openai_utils.get_messages(arg_pair, nearest_neighbors, pred)
                 if args.dry_run is True:
                     continue

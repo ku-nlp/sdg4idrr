@@ -41,7 +41,7 @@ class BaseOpenAIUtils:
         max_completion_tokens: int,
         level: Literal["l2", "l1"] = "l2",
         num_few_shot_examples: Optional[int] = None,
-    ):
+    ) -> None:
         self.model_name = model_name
         self.encoding = encoding_for_model(model_name)
 

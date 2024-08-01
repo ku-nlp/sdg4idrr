@@ -74,7 +74,7 @@ def save_synthetic_examples(
 
 
 def main():
-    parser = ArgumentParser()
+    parser = ArgumentParser(description="script to generate candidates of Arg2")
     parser.add_argument("TRAIN", type=Path, help="path to train.jsonl")
     parser.add_argument("DEV_PRED", type=Path, help="path to dev_pred.jsonl")
     parser.add_argument("OUT_DIR", type=Path, help="path to output directory")
@@ -88,12 +88,13 @@ def main():
 
     set_seed(seed=0)
 
+    num_few_shot_examples = 8
     openai_utils = OpenAIUtils(
         model_name="gpt-4-0613",
         max_tokens=8000,
         max_completion_tokens=2048,
         level="l2",
-        num_few_shot_examples=8,
+        num_few_shot_examples=num_few_shot_examples,
     )
 
     sense2train_examples = openai_utils.get_sense2examples(
@@ -119,6 +120,7 @@ def main():
         )
         bar = tqdm(list(zip(train_examples, nearest_neighbors_list)))
         for train_example, nearest_neighbors in bar:
+            # random_samples = sample(sense2train_examples[true], num_few_shot_examples)
             messages = openai_utils.get_messages(train_example, nearest_neighbors, true)
             if args.dry_run is True:
                 continue
