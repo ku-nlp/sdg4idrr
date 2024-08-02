@@ -36,14 +36,13 @@ def get_argument(raw_text: str, arg_span_list: str) -> str:
 
 # cf. https://github.com/najoungkim/pdtb3/blob/master/preprocess/preprocess_pdtb3.py
 def get_section2examples(args: Namespace) -> dict[str, list[dict[str, str]]]:
-    article_id2raw_file = {
-        raw_file.stem: raw_file for raw_file in (args.IN_ROOT / "raw").glob("**/wsj_*")
-    }
+    article_id2raw_file = {raw_file.stem: raw_file for raw_file in (args.IN_ROOT / "raw").glob("**/wsj_*")}
 
+    example_id = 0
     section2examples = defaultdict(list)
     for gold_file in tqdm((args.IN_ROOT / "gold").glob("**/wsj_*")):
         article_id = gold_file.stem
-        for gold_line in gold_file.read_text(encoding="latin-1").splitlines():
+        for i, gold_line in enumerate(gold_file.read_text(encoding="latin-1").splitlines()):
             values = gold_line.split("|")
             if values[Index.relation_type] != "Implicit":
                 continue
@@ -51,6 +50,7 @@ def get_section2examples(args: Namespace) -> dict[str, list[dict[str, str]]]:
             raw_text = article_id2raw_file[article_id].read_text(encoding="latin-1")
 
             example = {
+                "example_id": f"{article_id}-{i}",
                 "article_id": article_id,
                 "arg1": get_argument(raw_text, values[Index.arg1_span_list]),
                 "arg2": get_argument(raw_text, values[Index.arg2_span_list]),
@@ -69,12 +69,11 @@ def get_section2examples(args: Namespace) -> dict[str, list[dict[str, str]]]:
                     {
                         f"{sense_index.name}_l1": ".".join(classes[:1]),
                         f"{sense_index.name}_l2": ".".join(classes[:2]),
-                        f"{sense_index.name}_l3": ".".join(classes[:3])
-                        if len(classes) == 3
-                        else "",
+                        f"{sense_index.name}_l3": ".".join(classes[:3]) if len(classes) == 3 else "",
                     }
                 )
             section2examples[gold_file.parent.stem].append(example)
+            example_id += 1
     return section2examples
 
 
@@ -85,18 +84,23 @@ def gather_examples(
     return [e for i in section_indices for e in section2examples[f"{i:02}"]]
 
 
-def save_examples(out_file: Path, examples: list[dict[str, str]]) -> None:
+def save_examples(out_file: Path, examples: list[dict[str, str]], aid_file: Path) -> None:
+    article_id2examples = defaultdict(list)
+    for example in examples:
+        article_id2examples[example["article_id"]].append(example)
+
+    article_ids = [line for line in aid_file.read_text().splitlines()]
     with out_file.open(mode="w") as f:
-        f.write("\n".join(json.dumps(e) for e in examples) + "\n")
+        for article_id in article_ids:
+            for example in article_id2examples[article_id]:
+                f.write(json.dumps(example) + "\n")
 
 
 def get_stats(examples: list[dict[str, str]]) -> dict[str, int]:
     ctr = defaultdict(int)
     for example in examples:
         for sense in {
-            example[f"sclass{indices}_{level}"]
-            for indices in ["1a", "1b", "2a", "2b"]
-            for level in ["l1", "l2"]
+            example[f"sclass{indices}_{level}"] for indices in ["1a", "1b", "2a", "2b"] for level in ["l1", "l2"]
         }:
             ctr[sense] += 1
     return {
@@ -108,7 +112,7 @@ def get_stats(examples: list[dict[str, str]]) -> dict[str, int]:
 
 
 # cf. https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00142/43281/One-Vector-is-Not-Enough-Entity-Augmented
-def ji_split(out_root: Path, section2examples: dict[str, list[dict[str, str]]]) -> None:
+def ji_split(out_root: Path, section2examples: dict[str, list[dict[str, str]]], aid_dir: Path) -> None:
     expected_ji_stats = {
         "train": {
             "num_examples": 17052,
@@ -191,11 +195,9 @@ def ji_split(out_root: Path, section2examples: dict[str, list[dict[str, str]]]) 
     out_dir = out_root / "ji"
     out_dir.mkdir(parents=True, exist_ok=True)
     for split, examples in dataset.items():
-        save_examples(out_dir / f"{split}.jsonl", examples)
+        save_examples(out_dir / f"{split}.jsonl", examples, aid_dir / f"{split}.txt")
         for key, value in get_stats(examples).items():
-            assert (
-                value == expected_ji_stats[split][key]
-            ), f"{split}-{key} isn't reproduced"
+            assert value == expected_ji_stats[split][key], f"{split}-{key} isn't reproduced"
 
 
 def main():
@@ -235,10 +237,11 @@ def main():
         ),
     )
     parser.add_argument("OUT_ROOT", type=Path, help="path to output root")
+    parser.add_argument("--aid-dir", type=Path, help="path to article id directory for reproduction")
     args = parser.parse_args()
 
     section2examples = get_section2examples(args)
-    ji_split(args.OUT_ROOT, section2examples)
+    ji_split(args.OUT_ROOT, section2examples, args.aid_dir)
 
 
 if __name__ == "__main__":

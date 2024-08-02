@@ -5,13 +5,14 @@ This repository contains scripts of Synthetic Data Generation for Implicit Disco
 ### Requirements
 
 - Python 3.9
-  - see pyproject.toml
-- poetry
-  ```shell
-  pip install poetry
-  ```
+  - poetry
+    ```shell
+    pip install poetry
+    ```
+  - Dependencies: see pyproject.toml
 - Java (required to install hydra)
   ```shell
+  # command example
   wget https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz
   tar -xf openjdk-17.0.2_linux-x64_bin.tar.gz
   mv jdk-17.0.2/ $HOME/.local/
@@ -47,18 +48,34 @@ pre-commit install
 poetry run python scripts/build_pdtb3_dataset.py -h
 # build PDTB3 dataset
 poetry run python scripts/build_pdtb3_dataset.py \
-  IN_ROOT/ \
-  OUT_ROOT/
+  path/to/IN_ROOT/ \
+  data/ \
+  --aid-dir data/article_ids/
 ```
+
+##### Rebuild Synthetic Data
+
+```shell
+# rebuild synthetic data from PDTB3 dataset and annotations
+poetry run python scripts/rebuild_synthetic_data.py \
+  data/ji/train.jsonl \
+  data/annot/ \
+  data/synth/
+```
+
+Since synthetic data was generated using GPT-4, please refer to the OpenAI's terms of use.
+For instance, you may not use it to develop models that compete with OpenAI.
+
+---
 
 ##### Investigate Few-Shot Performance of ChatGPT
 
 ```shell
 # investigate few-shot performance of ChatGPT on PDTB3 dataset
 poetry run python scripts/preliminary/investigate_few-shot_performance_of_chatgpt.py \
-  path/to/train.jsonl \
-  path/to/test.jsonl \
-  gpt4_few-shot.jsonl \
+  data/ji/train.jsonl \
+  data/ji/test.jsonl \
+  results/gpt4_few-shot_pred.jsonl \
   [--dry-run]
 ```
 
@@ -67,8 +84,8 @@ poetry run python scripts/preliminary/investigate_few-shot_performance_of_chatgp
 ```shell
 # generate candidates of Arg2 based on a confusion matrix
 poetry run python scripts/generate_candidates_of_arg2.py \
-  path/to/train.jsonl \
-  path/to/dev_pred.jsonl \
+  data/ji/train.jsonl \
+  results/dev_pred.jsonl \
   OUT_DIR/ \
   [--top-k int] \
   [--dry-run]
@@ -79,13 +96,15 @@ poetry run python scripts/generate_candidates_of_arg2.py \
 ```shell
 # filter synthetic argument pairs using GPT-4
 poetry run python scripts/filter_synthetic_argument_pairs.py \
-  path/to/train.jsonl \
-  path/to/dev_pred.jsonl \
+  data/ji/train.jsonl \
+  results/dev_pred.jsonl \
   SYNTH_DATA_DIR/ \
   OUT_DIR/ \
   [--top-k int] \
   [--dry-run]
 ```
+
+---
 
 ### Reference/Citation
 

@@ -5,4 +5,3 @@ src/hydra/
 
 .env
 config/base.yaml
-data/
