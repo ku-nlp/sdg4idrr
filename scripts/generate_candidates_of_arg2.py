@@ -22,9 +22,7 @@ class OpenAIUtils(BaseOpenAIUtils):
             f"{demonstrations}\n"
             f'Please write down arguments that have the relation "{true}" to the argument "{train_example.arg1}".'
         )
-        assistant_prompt = (
-            "Here list several answers:\n" f"- {train_example.arg2}\n" "- "
-        )
+        assistant_prompt = "Here list several answers:\n" f"- {train_example.arg2}\n" "- "
 
         # conn = self.get_sense2conns(train_example)[true][0]
         # assistant_prompt = (
@@ -43,8 +41,7 @@ class OpenAIUtils(BaseOpenAIUtils):
             )
         self.monitor["num_examples"] += 1
         self.monitor["max_prompt_tokens"] = max(
-            len(self.encoding.encode(user_prompt))
-            + len(self.encoding.encode(assistant_prompt)),
+            len(self.encoding.encode(user_prompt)) + len(self.encoding.encode(assistant_prompt)),
             self.monitor["max_prompt_tokens"],
         )
 
@@ -57,9 +54,7 @@ class OpenAIUtils(BaseOpenAIUtils):
         ]
 
 
-def save_synthetic_examples(
-    synthetic_examples: list[tuple[ObjectHook, str]], out_file: Path
-) -> None:
+def save_synthetic_examples(synthetic_examples: list[tuple[ObjectHook, str]], out_file: Path) -> None:
     with out_file.open(mode="w") as f:
         for synthetic_examples in synthetic_examples:
             for train_example, completion in synthetic_examples:
@@ -78,12 +73,8 @@ def main():
     parser.add_argument("TRAIN", type=Path, help="path to train.jsonl")
     parser.add_argument("DEV_PRED", type=Path, help="path to dev_pred.jsonl")
     parser.add_argument("OUT_DIR", type=Path, help="path to output directory")
-    parser.add_argument(
-        "--top-k", default=3, type=int, help="how many confusing sense pairs to extract"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="whether to perform a dry run"
-    )
+    parser.add_argument("--top-k", default=3, type=int, help="how many confusing sense pairs to extract")
+    parser.add_argument("--dry-run", action="store_true", help="whether to perform a dry run")
     args = parser.parse_args()
 
     set_seed(seed=0)
@@ -97,15 +88,9 @@ def main():
         num_few_shot_examples=num_few_shot_examples,
     )
 
-    sense2train_examples = openai_utils.get_sense2examples(
-        openai_utils.load_examples(args.TRAIN)
-    )
-    norm_conf_mtx = openai_utils.compute_normalized_confusion_matrix(
-        openai_utils.load_examples(args.DEV_PRED)
-    )
-    confusing_sense_pairs = openai_utils.get_top_k_confusing_sense_pairs(
-        norm_conf_mtx, top_k=args.top_k
-    )
+    sense2train_examples = openai_utils.get_sense2examples(openai_utils.load_examples(args.TRAIN))
+    norm_conf_mtx = openai_utils.compute_normalized_confusion_matrix(openai_utils.load_examples(args.DEV_PRED))
+    confusing_sense_pairs = openai_utils.get_top_k_confusing_sense_pairs(norm_conf_mtx, top_k=args.top_k)
 
     args.OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -127,9 +112,7 @@ def main():
             response = openai_utils.get_response(messages)
             if response is None:
                 continue
-            synthetic_examples.append(
-                (train_example, response["choices"][0]["message"]["content"])
-            )
+            synthetic_examples.append((train_example, response["choices"][0]["message"]["content"]))
             bar.set_postfix({"cost": f"${openai_utils.compute_cost()}"})
             sleep(1)
         if args.dry_run is True:
