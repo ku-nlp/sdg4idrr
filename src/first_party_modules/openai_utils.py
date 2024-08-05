@@ -1,7 +1,7 @@
 import json
 import random
 from collections import defaultdict
-from logging import getLogger, ERROR
+from logging import ERROR, getLogger
 from os import environ
 from pathlib import Path
 from typing import Literal, Optional
@@ -14,14 +14,13 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from tiktoken import encoding_for_model
 from torch import as_tensor
 
-from first_party_modules.utils import ObjectHook
 from first_party_modules.constants import (
-    PDTB3_L1_SENSES,
     PDTB3_L1_SENSE2DEFINITION,
-    SELECTED_PDTB3_L2_SENSES,
+    PDTB3_L1_SENSES,
     SELECTED_PDTB3_L2_SENSE2DEFINITION,
+    SELECTED_PDTB3_L2_SENSES,
 )
-
+from first_party_modules.utils import ObjectHook
 
 load_dotenv()
 openai.api_key = environ["OPENAI-API-KEY"]
@@ -75,10 +74,7 @@ class BaseOpenAIUtils:
 
     @staticmethod
     def load_examples(in_file: Path) -> list[ObjectHook]:
-        return [
-            json.loads(line, object_hook=ObjectHook)
-            for line in in_file.read_text().splitlines()
-        ]
+        return [json.loads(line, object_hook=ObjectHook) for line in in_file.read_text().splitlines()]
 
     def get_senses(self, example: ObjectHook) -> list[str]:
         senses = []
@@ -88,9 +84,7 @@ class BaseOpenAIUtils:
                 senses.append(sense)
         return senses
 
-    def get_sense2examples(
-        self, examples: list[ObjectHook]
-    ) -> dict[str, list[ObjectHook]]:
+    def get_sense2examples(self, examples: list[ObjectHook]) -> dict[str, list[ObjectHook]]:
         sense2examples = defaultdict(list)
         for example in examples:
             for sense in self.get_senses(example):
@@ -102,15 +96,11 @@ class BaseOpenAIUtils:
         for conn_index, sclass_index in ["1a", "1b", "2a", "2b"]:
             sense = example[f"sclass{conn_index}{sclass_index}_{self.level}"]
             conn = example[f"conn{conn_index}"]
-            if (
-                sense in self.senses and conn not in sense2conns[sense]
-            ):  # conn != "" if sense in self.senses
+            if sense in self.senses and conn not in sense2conns[sense]:  # conn != "" if sense in self.senses
                 sense2conns[sense].append(conn)
         return sense2conns
 
-    def get_sense_conn2examples(
-        self, examples: list[ObjectHook]
-    ) -> dict[str, dict[str, list[ObjectHook]]]:
+    def get_sense_conn2examples(self, examples: list[ObjectHook]) -> dict[str, dict[str, list[ObjectHook]]]:
         sense_conn2examples = defaultdict(lambda: defaultdict(list))
         for example in examples:
             for sense, conns in self.get_sense2conns(example).items():
@@ -124,17 +114,12 @@ class BaseOpenAIUtils:
         train_examples: list[ObjectHook],
     ) -> list[list[ObjectHook]]:
         # (num_arg_pairs, num_train_examples) -> (num_arg_pairs, top_k)
-        similarities = self.retriever.similarity(
-            arg_pairs, [f"{e.arg1} {e.arg2}" for e in train_examples]
-        )
+        similarities = self.retriever.similarity(arg_pairs, [f"{e.arg1} {e.arg2}" for e in train_examples])
         k = min(len(train_examples), self.num_few_shot_examples)
         _, top_k_indices_list = as_tensor(similarities).topk(k, dim=1)
         if k < self.num_few_shot_examples:
             print(f"k < num_few-shot_examples ({k} < {self.num_few_shot_examples})")
-        return [
-            [train_examples[i] for i in top_k_indices]
-            for top_k_indices in top_k_indices_list
-        ]
+        return [[train_examples[i] for i in top_k_indices] for top_k_indices in top_k_indices_list]
 
     def get_n_way_k_shot_examples_list(
         self,
@@ -143,21 +128,13 @@ class BaseOpenAIUtils:
     ) -> list[list[tuple[ObjectHook, str]]]:
         num_senses = len(self.senses)
         # placeholder
-        n_way_k_shot_examples_list = [
-            [...] * num_senses * self.num_few_shot_examples
-            for _ in range(len(examples))
-        ]
+        n_way_k_shot_examples_list = [[...] * num_senses * self.num_few_shot_examples for _ in range(len(examples))]
         arg_pairs = [f"{e.arg1} {e.arg2}" for e in examples]
         for j, sense in enumerate(self.senses):
-            nearest_neighbors_list = self.get_nearest_neighbors_list(
-                arg_pairs, sense2train_examples[sense]
-            )
+            nearest_neighbors_list = self.get_nearest_neighbors_list(arg_pairs, sense2train_examples[sense])
             for i, nearest_neighbors in enumerate(nearest_neighbors_list):
                 for k, nearest_neighbor in enumerate(nearest_neighbors):
-                    n_way_k_shot_examples_list[i][j + num_senses * k] = (
-                        nearest_neighbor,
-                        sense,
-                    )
+                    n_way_k_shot_examples_list[i][j + num_senses * k] = (nearest_neighbor, sense)
         return n_way_k_shot_examples_list
 
     def get_messages(self, *args) -> list[dict[str, str]]:
@@ -201,22 +178,18 @@ class BaseOpenAIUtils:
             )
         elif self.model_name == "gpt-3.5-turbo-16k-0613":
             return round(
-                self.monitor["sum_prompt_tokens"] / 1000 * 0.003
-                + self.monitor["sum_completion_tokens"] / 1000 * 0.004,
+                self.monitor["sum_prompt_tokens"] / 1000 * 0.003 + self.monitor["sum_completion_tokens"] / 1000 * 0.004,
                 3,
             )
         elif self.model_name == "gpt-4-0613":
             return round(
-                self.monitor["sum_prompt_tokens"] / 1000 * 0.03
-                + self.monitor["sum_completion_tokens"] / 1000 * 0.06,
+                self.monitor["sum_prompt_tokens"] / 1000 * 0.03 + self.monitor["sum_completion_tokens"] / 1000 * 0.06,
                 3,
             )
         else:
             raise ValueError("invalid model")
 
-    def compute_normalized_confusion_matrix(
-        self, dev_examples: list[ObjectHook]
-    ) -> np.array:
+    def compute_normalized_confusion_matrix(self, dev_examples: list[ObjectHook]) -> np.array:
         confusion_matrix = np.zeros((len(self.senses), len(self.senses)), dtype=int)
 
         for i, dev_example in enumerate(dev_examples):
@@ -240,11 +213,7 @@ class BaseOpenAIUtils:
         normalized_confusion_matrix: np.array,
         top_k: int = 5,
     ) -> list[tuple[str, str]]:
-        _, indices = (
-            as_tensor(normalized_confusion_matrix)
-            .flatten()
-            .topk(normalized_confusion_matrix.size)
-        )
+        _, indices = as_tensor(normalized_confusion_matrix).flatten().topk(normalized_confusion_matrix.size)
         confusing_sense_pairs = []
         for index in indices:
             i, j = np.unravel_index(index, normalized_confusion_matrix.shape)

@@ -31,16 +31,10 @@ class OpenAIUtils(BaseOpenAIUtils):
             f"Arg2: {test_example.arg2}\n"
             "Answer: "
         )
-        user_prompt = self.get_user_prompt(
-            instruction, n_way_k_shot_examples, test_input
-        )
+        user_prompt = self.get_user_prompt(instruction, n_way_k_shot_examples, test_input)
 
         if self.monitor["num_examples"] < 1:
-            print(
-                "---------- confirm user prompt ----------\n"
-                f"{user_prompt}\n"
-                "--------------------"
-            )
+            print("---------- confirm user prompt ----------\n" f"{user_prompt}\n" "--------------------")
         self.monitor["num_examples"] += 1
 
         return [
@@ -58,15 +52,12 @@ class OpenAIUtils(BaseOpenAIUtils):
     ) -> str:
         for i in range(len(n_way_k_shot_examples), 0, -1):
             demonstrations = "\n".join(
-                f"Arg1: {e.arg1}\nArg2: {e.arg2}\nAnswer: {s}\n"
-                for e, s in n_way_k_shot_examples[:i]
+                f"Arg1: {e.arg1}\nArg2: {e.arg2}\nAnswer: {s}\n" for e, s in n_way_k_shot_examples[:i]
             )
             user_prompt = f"{instruction}\n" f"{demonstrations}\n" f"{test_input}"
             num_prompt_tokens = len(self.encoding.encode(user_prompt))
 
-            self.monitor["max_prompt_tokens"] = max(
-                num_prompt_tokens, self.monitor["max_prompt_tokens"]
-            )
+            self.monitor["max_prompt_tokens"] = max(num_prompt_tokens, self.monitor["max_prompt_tokens"])
 
             if num_prompt_tokens <= self.max_prompt_tokens:
                 return user_prompt
@@ -134,15 +125,11 @@ def save_results(results: list[tuple[ObjectHook, str]], output_file: Path) -> No
 
 
 def main():
-    parser = ArgumentParser(
-        description="script to investigate the few-shot performance of ChatGPT on PDTB3 dataset"
-    )
+    parser = ArgumentParser(description="script to investigate the few-shot performance of ChatGPT on PDTB3 dataset")
     parser.add_argument("TRAIN", type=Path, help="path to train.jsonl")
     parser.add_argument("TEST", type=Path, help="path to test.jsonl")
     parser.add_argument("OUT_FILE", type=Path, help="path to output file")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="whether to perform a dry run"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="whether to perform a dry run")
     args = parser.parse_args()
 
     set_seed(seed=0)
@@ -157,13 +144,9 @@ def main():
         num_few_shot_examples=8,
     )
 
-    sense2train_examples = openai_utils.get_sense2examples(
-        openai_utils.load_examples(args.TRAIN)
-    )
+    sense2train_examples = openai_utils.get_sense2examples(openai_utils.load_examples(args.TRAIN))
     test_examples = openai_utils.load_examples(args.TEST)
-    n_way_k_shot_examples_list = openai_utils.get_n_way_k_shot_examples_list(
-        test_examples, sense2train_examples
-    )
+    n_way_k_shot_examples_list = openai_utils.get_n_way_k_shot_examples_list(test_examples, sense2train_examples)
 
     results = []
     bar = tqdm(list(zip(test_examples, n_way_k_shot_examples_list)))
