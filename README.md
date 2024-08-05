@@ -1,6 +1,6 @@
 # Synthetic Data Generation for Implicit Discourse Relation Recognition
 
-This repository contains scripts of Synthetic Data Generation for Implicit Discourse Relation Recognition (SDG4IDRR). [WIP]
+This repository contains scripts of Synthetic Data Generation for Implicit Discourse Relation Recognition (SDG4IDRR).
 
 ### Requirements
 
@@ -23,6 +23,8 @@ This repository contains scripts of Synthetic Data Generation for Implicit Disco
 
 ```shell
 git clone git@github.com:facebookresearch/hydra.git -b v1.3.2 src/hydra
+git clone git@github.com:princeton-nlp/SimCSE.git -b 0.4 src/SimCSE
+rsync -av patch/src/ src/
 poetry install [--no-dev]
 
 # make a .env file
@@ -60,7 +62,7 @@ poetry run python scripts/build_pdtb3_dataset.py \
 poetry run python scripts/rebuild_synthetic_data.py \
   data/ji/train.jsonl \
   data/annot/ \
-  data/synth/
+  data/synth/filtered/
 ```
 
 Since synthetic data was generated using GPT-4, please refer to the OpenAI's terms of use.
@@ -85,8 +87,8 @@ poetry run python scripts/preliminary/investigate_few-shot_performance_of_chatgp
 # generate candidates of Arg2 based on a confusion matrix
 poetry run python scripts/generate_candidates_of_arg2.py \
   data/ji/train.jsonl \
-  results/dev_pred.jsonl \
-  OUT_DIR/ \
+  results/example_dev_pred.jsonl \
+  data/synth/unfiltered/ \
   [--top-k int] \
   [--dry-run]
 ```
@@ -97,9 +99,9 @@ poetry run python scripts/generate_candidates_of_arg2.py \
 # filter synthetic argument pairs using GPT-4
 poetry run python scripts/filter_synthetic_argument_pairs.py \
   data/ji/train.jsonl \
-  results/dev_pred.jsonl \
-  SYNTH_DATA_DIR/ \
-  OUT_DIR/ \
+  results/example_dev_pred.jsonl \
+  data/synth/unfiltered/ \
+  data/synth/filtered/ \
   [--top-k int] \
   [--dry-run]
 ```
@@ -118,6 +120,5 @@ poetry run python scripts/filter_synthetic_argument_pairs.py \
   month = may,
   year = "2024",
   address = "Turin, Italy",
-  note = "(to appear)"
 }
 ```

@@ -1,3 +1,4 @@
+import gzip
 import json
 from argparse import ArgumentParser
 from collections import defaultdict
@@ -29,6 +30,11 @@ class PDTB3Utils:
     def load_examples(in_file: Path) -> list[ObjectHook]:
         return [json.loads(line, object_hook=ObjectHook) for line in in_file.read_text().splitlines()]
 
+    @staticmethod
+    def load_annotations(in_file: Path) -> list[ObjectHook]:
+        with gzip.open(in_file, mode="rb") as f:
+            return [json.loads(line, object_hook=ObjectHook) for line in f.readlines()]
+
     def get_senses(self, example: ObjectHook) -> list[str]:
         senses = []
         for indices in ["1a", "1b", "2a", "2b"]:
@@ -54,9 +60,10 @@ def main():
 
     pdtb3_utils = PDTB3Utils(level="l2")
     examples = pdtb3_utils.load_examples(args.TRAIN)
+    args.OUT_DIR.mkdir(parents=True, exist_ok=True)
     for annot_file in args.ANNOT.glob("*.jsonl.gz"):
         example_id2annots = defaultdict(list)
-        for annot in pdtb3_utils.load_examples(annot_file):
+        for annot in pdtb3_utils.load_annotations(annot_file):
             example_id = annot.pop("example_id")
             example_id2annots[example_id].append(annot)
         with (args.OUT_DIR / f"{annot_file.name}").open(mode="w") as f:
