@@ -1,54 +1,9 @@
-import gzip
 import json
 from argparse import ArgumentParser
 from collections import defaultdict
 from pathlib import Path
-from typing import Literal
 
-from first_party_modules.constants import (
-    PDTB3_L1_SENSE2DEFINITION,
-    PDTB3_L1_SENSES,
-    SELECTED_PDTB3_L2_SENSE2DEFINITION,
-    SELECTED_PDTB3_L2_SENSES,
-)
-from first_party_modules.utils import ObjectHook
-
-
-class PDTB3Utils:
-    def __init__(self, level: Literal["l2", "l1"] = "l2") -> None:
-        self.level = level
-        if level == "l2":
-            self.senses = SELECTED_PDTB3_L2_SENSES
-            self.sense2definition = SELECTED_PDTB3_L2_SENSE2DEFINITION
-        elif level == "l1":
-            self.senses = PDTB3_L1_SENSES
-            self.sense2definition = PDTB3_L1_SENSE2DEFINITION
-        else:
-            raise ValueError("invalid level")
-
-    @staticmethod
-    def load_examples(in_file: Path) -> list[ObjectHook]:
-        return [json.loads(line, object_hook=ObjectHook) for line in in_file.read_text().splitlines()]
-
-    @staticmethod
-    def load_annotations(in_file: Path) -> list[ObjectHook]:
-        with gzip.open(in_file, mode="rb") as f:
-            return [json.loads(line, object_hook=ObjectHook) for line in f.readlines()]
-
-    def get_senses(self, example: ObjectHook) -> list[str]:
-        senses = []
-        for indices in ["1a", "1b", "2a", "2b"]:
-            sense = example[f"sclass{indices}_{self.level}"]
-            if sense in self.senses and sense not in senses:
-                senses.append(sense)
-        return senses
-
-    def get_sense2examples(self, examples: list[ObjectHook]) -> dict[str, list[ObjectHook]]:
-        sense2examples = defaultdict(list)
-        for example in examples:
-            for sense in self.get_senses(example):
-                sense2examples[sense].append(example)
-        return sense2examples
+from first_party_modules.utils import PDTB3Utils
 
 
 def main():

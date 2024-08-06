@@ -3,10 +3,10 @@ from argparse import ArgumentParser
 from pathlib import Path
 from time import sleep
 
-# from random import sample
-from first_party_modules.openai_utils import BaseOpenAIUtils, set_seed
 from first_party_modules.progress_bar import tqdm
-from first_party_modules.utils import ObjectHook
+
+# from random import sample
+from first_party_modules.utils import BaseOpenAIUtils, ObjectHook, set_seed
 
 
 class OpenAIUtils(BaseOpenAIUtils):
