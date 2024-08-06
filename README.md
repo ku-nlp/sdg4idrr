@@ -51,7 +51,7 @@ poetry run python scripts/build_pdtb3_dataset.py -h
 # build PDTB3 dataset
 poetry run python scripts/build_pdtb3_dataset.py \
   path/to/IN_ROOT/ \
-  data/ \
+  dataset/ \
   --aid-dir data/article_ids/
 ```
 
@@ -60,7 +60,7 @@ poetry run python scripts/build_pdtb3_dataset.py \
 ```shell
 # rebuild synthetic data from PDTB3 dataset and annotations
 poetry run python scripts/rebuild_synthetic_data.py \
-  data/ji/train.jsonl \
+  dataset/ji/train.jsonl \
   data/annot/ \
   data/synth/filtered/
 ```
@@ -75,19 +75,19 @@ For instance, you may not use it to develop models that compete with OpenAI.
 ```shell
 # investigate few-shot performance of ChatGPT on PDTB3 dataset
 poetry run python scripts/preliminary/investigate_few-shot_performance_of_chatgpt.py \
-  data/ji/train.jsonl \
-  data/ji/test.jsonl \
-  results/gpt4_few-shot_pred.jsonl \
+  dataset/ji/train.jsonl \
+  dataset/ji/test.jsonl \
+  results/few-shot/gpt-4-0613.jsonl \
   [--dry-run]
 ```
 
 ##### Generate Candidates of Arg2
 
 ```shell
-# generate candidates of Arg2 based on a confusion matrix
+# generate candidates of Arg2 using GPT-4 based on a confusion matrix
 poetry run python scripts/generate_candidates_of_arg2.py \
-  data/ji/train.jsonl \
-  results/example_dev_pred.jsonl \
+  dataset/ji/train.jsonl \
+  results/run_id/dev_pred.jsonl \
   data/synth/unfiltered/ \
   [--top-k int] \
   [--dry-run]
@@ -96,14 +96,25 @@ poetry run python scripts/generate_candidates_of_arg2.py \
 ##### Filter Synthetic Argument Pairs
 
 ```shell
-# filter synthetic argument pairs using GPT-4
+# filter synthetic argument pairs using GPT-4 based on a confusion matrix
 poetry run python scripts/filter_synthetic_argument_pairs.py \
-  data/ji/train.jsonl \
-  results/example_dev_pred.jsonl \
+  dataset/ji/train.jsonl \
+  results/run_id/dev_pred.jsonl \
   data/synth/unfiltered/ \
   data/synth/filtered/ \
   [--top-k int] \
   [--dry-run]
+```
+
+##### Compile
+
+```shell
+# compile synthetic data based on a confusion matrix
+poetry run python scripts/compile.py \
+  results/run_id/dev_pred.jsonl \
+  data/synth/filtered/ \
+  data/synth/compiled/run_id/examples.jsonl \
+  [--top-k int]
 ```
 
 ---
