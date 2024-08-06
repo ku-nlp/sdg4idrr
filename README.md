@@ -73,8 +73,8 @@ For instance, you may not use it to develop models that compete with OpenAI.
 ```shell
 # compile synthetic data based on a confusion matrix
 poetry run python scripts/compile.py \
-  results/run_id/dev_pred.jsonl \
   data/synth/filtered/ \
+  results/run_id/dev_pred.jsonl \
   data/synth/compiled/run_id/examples.jsonl \
   [--top-k int]
 ```
@@ -109,9 +109,9 @@ poetry run python scripts/generate_candidates_of_arg2.py \
 ```shell
 # filter synthetic argument pairs using GPT-4 based on a confusion matrix
 poetry run python scripts/filter_synthetic_argument_pairs.py \
+  data/synth/unfiltered/ \
   dataset/ji/train.jsonl \
   results/run_id/dev_pred.jsonl \
-  data/synth/unfiltered/ \
   data/synth/filtered/ \
   [--top-k int] \
   [--dry-run]

@@ -7,8 +7,8 @@ from first_party_modules.utils import PDTB3Utils, set_seed
 
 def main():
     parser = ArgumentParser(description="script to organize synthetic data")
-    parser.add_argument("DEV_PRED", type=Path, help="path to dev_pred.jsonl")
     parser.add_argument("FILTERED", type=Path, help="path to filtered synthetic data directory")
+    parser.add_argument("DEV_PRED", type=Path, help="path to dev_pred.jsonl")
     parser.add_argument("OUT_FILE", type=Path, help="path to output file")
     parser.add_argument("--top-k", default=3, type=int, help="how many confusing sense pairs to extract")
     args = parser.parse_args()
