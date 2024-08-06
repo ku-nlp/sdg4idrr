@@ -63,7 +63,7 @@ def main():
     parser = ArgumentParser(description="script to filter synthetic argument pairs")
     parser.add_argument("TRAIN", type=Path, help="path to train.jsonl")
     parser.add_argument("DEV_PRED", type=Path, help="path to dev_pred.jsonl")
-    parser.add_argument("SYNTH_DATA_DIR", type=Path, help="path to synthetic data directory")
+    parser.add_argument("UNFILTERED", type=Path, help="path to unfiltered synthetic data directory")
     parser.add_argument("OUT_DIR", type=Path, help="path to output directory")
     parser.add_argument("--top-k", default=3, type=int, help="how many confusing sense pairs to extract")
     parser.add_argument("--dry-run", action="store_true", help="whether to perform a dry run")
@@ -91,7 +91,7 @@ def main():
         stem = f"{true}_vs_{pred}"
         if (args.OUT_DIR / f"{stem}.jsonl").exists():
             continue
-        synthetic_examples = openai_utils.load_examples(args.SYNTH_DATA_DIR / f"{true}.jsonl")
+        synthetic_examples = openai_utils.load_examples(args.UNFILTERED / f"{true}.jsonl")
 
         arg_pairs = []
         indices = [0]

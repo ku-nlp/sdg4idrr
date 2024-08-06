@@ -8,7 +8,7 @@ from first_party_modules.utils import PDTB3Utils, set_seed
 def main():
     parser = ArgumentParser(description="script to organize synthetic data")
     parser.add_argument("DEV_PRED", type=Path, help="path to dev_pred.jsonl")
-    parser.add_argument("SYNTH_DATA_DIR", type=Path, help="path to synthetic data directory")
+    parser.add_argument("FILTERED", type=Path, help="path to filtered synthetic data directory")
     parser.add_argument("OUT_FILE", type=Path, help="path to output file")
     parser.add_argument("--top-k", default=3, type=int, help="how many confusing sense pairs to extract")
     args = parser.parse_args()
@@ -22,7 +22,7 @@ def main():
 
     filtered_synthetic_examples = []
     for true, pred in confusing_sense_pairs:
-        filtered_synthetic_examples += pdtb3_utils.load_examples(args.SYNTH_DATA_DIR / f"{true}_vs_{pred}.jsonl")
+        filtered_synthetic_examples += pdtb3_utils.load_examples(args.FILTERED / f"{true}_vs_{pred}.jsonl")
 
     with args.OUT_FILE.open(mode="w") as f:
         for filtered_synthetic_example in filtered_synthetic_examples:

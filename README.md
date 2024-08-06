@@ -68,6 +68,17 @@ poetry run python scripts/rebuild_synthetic_data.py \
 Since synthetic data was generated using GPT-4, please refer to the OpenAI's terms of use.
 For instance, you may not use it to develop models that compete with OpenAI.
 
+##### Compile
+
+```shell
+# compile synthetic data based on a confusion matrix
+poetry run python scripts/compile.py \
+  results/run_id/dev_pred.jsonl \
+  data/synth/filtered/ \
+  data/synth/compiled/run_id/examples.jsonl \
+  [--top-k int]
+```
+
 ---
 
 ##### Investigate Few-Shot Performance of ChatGPT
@@ -104,17 +115,6 @@ poetry run python scripts/filter_synthetic_argument_pairs.py \
   data/synth/filtered/ \
   [--top-k int] \
   [--dry-run]
-```
-
-##### Compile
-
-```shell
-# compile synthetic data based on a confusion matrix
-poetry run python scripts/compile.py \
-  results/run_id/dev_pred.jsonl \
-  data/synth/filtered/ \
-  data/synth/compiled/run_id/examples.jsonl \
-  [--top-k int]
 ```
 
 ---
