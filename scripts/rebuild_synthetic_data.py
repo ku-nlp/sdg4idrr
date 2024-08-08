@@ -21,7 +21,7 @@ def main():
         for annot in pdtb3_utils.load_annotations(annot_file):
             example_id = annot.pop("example_id")
             example_id2annots[example_id].append(annot)
-        with (args.OUT_DIR / f"{annot_file.name}").open(mode="w") as f:
+        with (args.OUT_DIR / f"{annot_file.stem}").open(mode="w") as f:
             for example in examples:
                 for annot in example_id2annots[example.example_id]:
                     synthetic_example = {

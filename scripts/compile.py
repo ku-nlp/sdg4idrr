@@ -19,6 +19,7 @@ def main():
 
     norm_conf_mtx = pdtb3_utils.compute_normalized_confusion_matrix(pdtb3_utils.load_examples(args.DEV_PRED))
     confusing_sense_pairs = pdtb3_utils.get_top_k_confusing_sense_pairs(norm_conf_mtx, top_k=args.top_k)
+    print(json.dumps(confusing_sense_pairs, indent=2))
 
     filtered_synthetic_examples = []
     for true, pred in confusing_sense_pairs:
