@@ -2,10 +2,6 @@ import json
 from argparse import ArgumentParser
 from pathlib import Path
 from time import sleep
-from typing import Literal
-
-import numpy as np
-from sklearn.metrics import f1_score
 
 from first_party_modules.progress_bar import tqdm
 from first_party_modules.utils import BaseOpenAIUtils, ObjectHook, set_seed
@@ -63,52 +59,6 @@ class OpenAIUtils(BaseOpenAIUtils):
         else:
             return f"{instruction}\n" f"{test_input}"
 
-    def compute_metrics(
-        self,
-        results: list[tuple[ObjectHook, str]],
-        handling_of_multi_labeled_examples: Literal["loose", "strict"] = "loose",
-    ) -> None:
-        num_examples = len(results)
-        num_classes = len(self.senses)
-
-        y_true = np.zeros((num_examples, num_classes), dtype=int)
-        y_pred = np.zeros((num_examples, num_classes), dtype=int)
-
-        for i, (test_example, completion) in enumerate(results):
-            senses = self.get_senses(test_example)
-            completion = completion.rstrip(".")
-
-            # loose: overwrite prediction with true labels
-            if handling_of_multi_labeled_examples == "loose":
-                for sense in senses:
-                    y_true[i, self.senses.index(sense)] = 1
-                if completion in senses:
-                    y_pred[i] = y_true[i]
-                elif completion in self.senses:
-                    y_pred[i, self.senses.index(completion)] = 1
-                else:
-                    print(f"invalid completion: {completion}")
-            # strict: ignore the other label that a model didn't predict
-            elif handling_of_multi_labeled_examples == "strict":
-                if completion in senses:
-                    y_true[i, self.senses.index(completion)] = 1
-                    y_pred[i, self.senses.index(completion)] = 1
-                else:
-                    y_true[i, self.senses.index(senses[0])] = 1
-                    if completion in self.senses:
-                        y_pred[i, self.senses.index(completion)] = 1
-                    else:
-                        print(f"invalid completion: {completion}")
-            else:
-                raise ValueError("invalid handling of multi-label examples")
-
-        f1s = f1_score(y_true=y_true, y_pred=y_pred, average=None)  # zero_division=0
-        micro_f1 = f1_score(y_true=y_true, y_pred=y_pred, average="micro")
-        macro_f1 = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
-        metrics = {s: round(f1, 3) for s, f1 in zip(self.senses, f1s)}
-        metrics.update({"micro-f1": round(micro_f1, 3), "macro-f1": round(macro_f1, 3)})
-        print(json.dumps(metrics, indent=2))
-
 
 def save_results(results: list[tuple[ObjectHook, str]], output_file: Path) -> None:
     output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -157,7 +107,8 @@ def main():
         if response is None:
             continue
         completion = response["choices"][0]["message"]["content"]
-        results.append((test_example, completion))
+        test_example["pred_sense"] = completion.rstrip(".")
+        results.append(test_example)
         bar.set_postfix({"cost": f"${openai_utils.compute_cost()}"})
         sleep(3)
     print(
@@ -167,6 +118,7 @@ def main():
 
     if args.dry_run is True:
         return None
+
     openai_utils.compute_metrics(results, handling_of_multi_labeled_examples="loose")
     save_results(results, args.OUT_FILE)
 

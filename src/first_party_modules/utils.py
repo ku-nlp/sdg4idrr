@@ -13,6 +13,7 @@ import numpy as np
 import openai
 from dotenv import load_dotenv
 from simcse import SimCSE
+from sklearn.metrics import f1_score
 from tenacity import retry, stop_after_attempt, wait_fixed
 from tiktoken import encoding_for_model
 from torch import as_tensor
@@ -124,6 +125,52 @@ class PDTB3Utils:
             if i != j:
                 confusing_sense_pairs.append((self.senses[i], self.senses[j]))
         return confusing_sense_pairs[:top_k]
+
+    def compute_metrics(
+        self,
+        results: list[ObjectHook],
+        handling_of_multi_labeled_examples: Literal["loose", "strict"] = "loose",
+    ) -> None:
+        num_examples = len(results)
+        num_classes = len(self.senses)
+
+        y_true = np.zeros((num_examples, num_classes), dtype=int)
+        y_pred = np.zeros((num_examples, num_classes), dtype=int)
+
+        for i, test_example in enumerate(results):
+            true_senses = self.get_senses(test_example)
+            pred_sense = test_example["pred_sense"]
+
+            # loose: overwrite prediction with true labels
+            if handling_of_multi_labeled_examples == "loose":
+                for true_sense in true_senses:
+                    y_true[i, self.senses.index(true_sense)] = 1
+                if pred_sense in true_senses:
+                    y_pred[i] = y_true[i]
+                elif pred_sense in self.senses:
+                    y_pred[i, self.senses.index(pred_sense)] = 1
+                else:
+                    print(f"invalid completion: {pred_sense}")
+            # strict: ignore the other label that a model didn't predict
+            elif handling_of_multi_labeled_examples == "strict":
+                if pred_sense in true_senses:
+                    y_true[i, self.senses.index(pred_sense)] = 1
+                    y_pred[i, self.senses.index(pred_sense)] = 1
+                else:
+                    y_true[i, self.senses.index(true_senses[0])] = 1
+                    if pred_sense in self.senses:
+                        y_pred[i, self.senses.index(pred_sense)] = 1
+                    else:
+                        print(f"invalid completion: {pred_sense}")
+            else:
+                raise ValueError("invalid handling of multi-label examples")
+
+        f1s = f1_score(y_true=y_true, y_pred=y_pred, average=None)  # zero_division=0
+        micro_f1 = f1_score(y_true=y_true, y_pred=y_pred, average="micro")
+        macro_f1 = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
+        metrics = {s: round(f1, 3) for s, f1 in zip(self.senses, f1s)}
+        metrics.update({"micro-f1": round(micro_f1, 3), "macro-f1": round(macro_f1, 3)})
+        print(json.dumps(metrics, indent=2))
 
 
 class BaseOpenAIUtils(PDTB3Utils):
