@@ -7,9 +7,8 @@ from typing import Literal
 import numpy as np
 from sklearn.metrics import f1_score
 
-from first_party_modules.openai_utils import BaseOpenAIUtils, set_seed
 from first_party_modules.progress_bar import tqdm
-from first_party_modules.utils import ObjectHook
+from first_party_modules.utils import BaseOpenAIUtils, ObjectHook, set_seed
 
 
 class OpenAIUtils(BaseOpenAIUtils):
